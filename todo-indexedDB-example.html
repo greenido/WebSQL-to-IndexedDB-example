@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8 />
+    <title>ToDo List with IndexedDB</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+
+    <script>
+      var todoDB = {};
+      var indexedDB = window.indexedDB || window.webkitIndexedDB ||
+        window.mozIndexedDB;
+
+      if ('webkitIndexedDB' in window) {
+        window.IDBTransaction = window.webkitIDBTransaction;
+        window.IDBKeyRange = window.webkitIDBKeyRange;
+      }
+
+      todoDB.indexedDB = {};
+      todoDB.indexedDB.db = null;
+
+      todoDB.indexedDB.onerror = function(e) {
+        console.log(e);
+      };
+
+      todoDB.indexedDB.open = function() {
+        var request = indexedDB.open("todos");
+
+        request.onsuccess = function(e) {
+          var v = "2.0 beta"; // yes! you can put strings in the version not just numbers
+          todoDB.indexedDB.db = e.target.result;
+          var db = todoDB.indexedDB.db;
+          // We can only create Object stores in a setVersion transaction;
+          if (v!= db.version) {
+            var setVrequest = db.setVersion(v);
+
+            // onsuccess is the only place we can create Object Stores
+            setVrequest.onfailure = todoDB.indexedDB.onerror;
+            setVrequest.onsuccess = function(e) {
+              if(db.objectStoreNames.contains("todo")) {
+                db.deleteObjectStore("todo");
+              }
+
+              var store = db.createObjectStore("todo",
+              {keyPath: "timeStamp"});
+
+              todoDB.indexedDB.getAllTodoItems();
+            };
+          }
+          else {
+            todoDB.indexedDB.getAllTodoItems();
+          }
+        };
+
+        request.onfailure = todoDB.indexedDB.onerror;
+      }
+
+      todoDB.indexedDB.addTodo = function(todoText) {
+        var db = todoDB.indexedDB.db;
+        var trans = db.transaction(['todo'], IDBTransaction.READ_WRITE);
+        var store = trans.objectStore("todo");
+
+        var data = {
+          "text": todoText,
+          "timeStamp": new Date().getTime()
+        };
+
+        var request = store.put(data);
+
+        request.onsuccess = function(e) {
+          todoDB.indexedDB.getAllTodoItems();
+        };
+
+        request.onerror = function(e) {
+          console.log("Error Adding: ", e);
+        };
+      };
+
+      todoDB.indexedDB.deleteTodo = function(id) {
+        var db = todoDB.indexedDB.db;
+        var trans = db.transaction(["todo"], IDBTransaction.READ_WRITE);
+        var store = trans.objectStore("todo");
+
+        var request = store.delete(id);
+
+        request.onsuccess = function(e) {
+          todoDB.indexedDB.getAllTodoItems();
+        };
+
+        request.onerror = function(e) {
+          console.log("Error Adding: ", e);
+        };
+      };
+
+      todoDB.indexedDB.getAllTodoItems = function() {
+        var todos = document.getElementById("todoItems");
+        todos.innerHTML = "";
+
+        var db = todoDB.indexedDB.db;
+        var trans = db.transaction(["todo"], IDBTransaction.READ_WRITE);
+        var store = trans.objectStore("todo");
+
+        // Get everything in the store;
+        var keyRange = IDBKeyRange.lowerBound(0);
+        var cursorRequest = store.openCursor(keyRange);
+
+        cursorRequest.onsuccess = function(e) {
+          var result = e.target.result;
+          if(!!result == false)
+            return;
+
+          renderTodo(result.value);
+          result.continue();
+        };
+
+        cursorRequest.onerror = todoDB.indexedDB.onerror;
+      };
+
+      function renderTodo(row) {
+        var todos = document.getElementById("todoItems");
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        var t = document.createTextNode(row.text);
+
+        a.addEventListener("click", function() {
+          todoDB.indexedDB.deleteTodo(row.timeStamp);
+        }, false);
+
+        a.textContent = " [Delete]";
+        li.appendChild(t);
+        li.appendChild(a);
+        todos.appendChild(li)
+      }
+
+      function addTodo() {
+        var todo = document.getElementById("todo");
+        todoDB.indexedDB.addTodo(todo.value);
+        todo.value = "";
+      }
+
+      function init() {
+        todoDB.indexedDB.open();
+      }
+
+      function showAll() {
+        document.getElementById("ourList").innerHTML = "" ;   
+        var request = window.indexedDB.open("todos");
+        request.onsuccess = function(event) {
+          // Enumerate the entire object store.
+          var db = todoDB.indexedDB.db;
+          var trans = db.transaction(["todo"], IDBTransaction.READ_ONLY);
+          var request = trans.objectStore("todo").openCursor();
+  
+          request.onsuccess = function(event) {
+            var cursor = request.result || event.result;
+            // If cursor is null then we've completed the enumeration.
+            if (!cursor) {
+              return;
+            }
+            var element = document.createElement("div");
+            element.textContent = "key: " + cursor.key + " => Todo text: " + cursor.value.text;
+            document.getElementById("ourList").appendChild(element);
+            cursor.continue();
+          }
+        }                    
+      }
+
+
+      $(function() {
+        console.log("-- lets start the party");
+        init();
+
+      });
+
+    </script>
+    <style>
+      #ourList {
+        background: lightcyan;
+        padding: 25px;
+        border-radius: 15px;
+      }
+      h1 {
+        font-size: 130%;
+      }
+      h3 {
+        font-size: 110%;
+        margin-top: 45px;
+      }
+      #todo {
+        background: lightgoldenrodyellow;
+        width: 250px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ToDo list - IndexedDB example</h1>
+    <ul id="todoItems"></ul>
+    <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
+    <input type="submit" value="Add Todo Item" onclick="addTodo(); return false;" />
+
+    <h3>Todos</h3>
+    <input type="submit" value="Show All Todos" onclick="showAll(); return false;" />
+    <div id="ourList">
+      
+    </div>
+  </body>
+</html>

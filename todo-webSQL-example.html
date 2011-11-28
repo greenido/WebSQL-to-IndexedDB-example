@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Todo in webSQL</title>
+    <meta name="author" content="Ido Green">
+    <!-- 
+      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    -->
+    <script src="http://code.jquery.com/jquery.min.js" ></script>
+
+    <style>
+      #ourList {
+        background: lightcyan;
+        padding: 25px;
+        border-radius: 15px;
+      }
+      h1 {
+        font-size: 130%;
+      }
+      h3 {
+        font-size: 110%;
+        margin-top: 45px;
+      }
+      #todo {
+        background: lightgoldenrodyellow;
+        width: 250px;
+      }
+      input {
+        width: 130px;
+        padding: 5px;
+      }
+      li {
+        background: lightblue;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ToDo list - WebSQL example</h1>
+    <ul id="todoItems"></ul>
+    <input type="text" id="todo" name="todo" placeholder="What do you need to do?"/>
+    <input type="submit" value="Add Todo Item" onclick="addTodo(); return false;" />
+
+    <h3>Todos</h3>
+    <input type="submit" value="Show All Todos" onclick="showAll(); return false;" />
+    <input type="submit" value="Delete All Todos" onclick="cleanAll(); return false;" />
+    <div id="ourList">
+
+    </div>
+
+
+    <script>
+      
+      function addTodo() {
+        var todo = document.getElementById("todo");
+        var task = {
+          "id": new Date().getTime(),
+          "text": todo.value };
+        
+        database.transaction(function(tx) {
+          tx.executeSql('INSERT INTO tasks (id, text) values (?, ?)', [task.id, task.text]);
+        });
+        // now let clean it to the next todo
+        todo.value = "";
+        showAll();
+      }
+      
+      function showAll() {
+        document.getElementById("ourList").innerHTML = "" ; 
+        database.transaction(function(tx) {
+          tx.executeSql('SELECT * FROM tasks', [], function (tx, results) {
+            var len = results.rows.length, i;
+            for (i = 0; i < len; i++) {
+//              var element = document.createElement("div");
+              var li = document.createElement("li");
+              var t = document.createTextNode(i+ ") key: " + results.rows.item(i).id +
+                " => Todo text: " + results.rows.item(i).text);
+              
+              var a = document.createElement("a");
+              a.textContent = " [Delete]";
+              a.setAttribute('data-key', results.rows.item(i).id);
+              a.setAttribute('data-val', results.rows.item(i).text);
+              a.addEventListener("click", function() {
+                deleteTodo(this.getAttribute("data-key"),this.getAttribute("data-val") );
+              }, false);
+              li.appendChild(t);
+              li.appendChild(a);
+//              element.appendChild(li);
+              document.getElementById("ourList").appendChild(li);
+            }
+          });        
+        });
+      }
+     
+     function deleteTodo(id, text) {
+        if (confirm("Are you sure you want to Delete "+ text +"?")) {
+          database.transaction(function(tx) {
+            tx.executeSql('DELETE FROM tasks WHERE id=?', [id]); 
+          });
+          showAll();
+        }
+        
+      }
+      function cleanAll() {
+        if (confirm("Are you sure you want to delete all Todos?")) {
+          document.getElementById("ourList").innerHTML = "" ; 
+          database.transaction(function(tx) {
+            tx.executeSql('DROP TABLE IF EXISTS tasks', []) 
+          });
+        }
+        
+      }
+      
+      // DROP TABLE IF EXISTS tweets <-- in case you wish to clean the DB
+      function initDB() {
+        database = openDatabase('todos1', '1.0', 'todo list example db', 2*1024*1024);
+        if (database) {
+          database.transaction(function(tx) {
+            tx.executeSql("CREATE TABLE IF NOT EXISTS tasks (id REAL UNIQUE, text TEXT)", []);
+          });
+        }
+      }
+      
+      //
+      $(function() {
+        console.log("-- started the main page and init our DB --");
+        initDB();
+        showAll();
+      });
+      
+
+    </script>
+  </body>
+</html>
