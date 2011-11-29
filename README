@@ -1,0 +1,5 @@
+Here are two examples of the same code (more or less). Both show how to work with WebSQL and indexedDB in order to save data in the client side.
+
+Since November 18, 2010, the W3C announced that Web SQL database is a deprecated specification. This is a recommendation for web developers to no longer use the technology as effectively the spec will receive no new updates and browser vendors aren't encouraged to support this technology. Many major browsers including Chrome, Safari, Opera and nearly all Webkit based mobile devices support WebSQL, however, if you are going to start a new project and/or you wish to have your code running with the new version of client side database (that will receive updates and improvements) you should implement indexedDB as your client side DB.
+
+Be strong.

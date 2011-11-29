@@ -4,7 +4,6 @@
     <meta charset=utf-8 />
     <title>ToDo List with IndexedDB</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-
     <script>
       var todoDB = {};
       var indexedDB = window.indexedDB || window.webkitIndexedDB ||
@@ -50,7 +49,6 @@
             todoDB.indexedDB.getAllTodoItems();
           }
         };
-
         request.onfailure = todoDB.indexedDB.onerror;
       }
 
