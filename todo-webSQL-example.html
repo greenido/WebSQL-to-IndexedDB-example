@@ -106,7 +106,6 @@
         
       }
       
-      // DROP TABLE IF EXISTS tweets <-- in case you wish to clean the DB
       function initDB() {
         database = openDatabase('todos1', '1.0', 'todo list example db', 2*1024*1024);
         if (database) {
@@ -116,7 +115,7 @@
         }
       }
       
-      //
+      // start the party
       $(function() {
         console.log("-- started the main page and init our DB --");
         initDB();
