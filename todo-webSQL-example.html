@@ -70,7 +70,6 @@
           tx.executeSql('SELECT * FROM tasks', [], function (tx, results) {
             var len = results.rows.length, i;
             for (i = 0; i < len; i++) {
-//              var element = document.createElement("div");
               var li = document.createElement("li");
               var t = document.createTextNode(i+ ") key: " + results.rows.item(i).id +
                 " => Todo text: " + results.rows.item(i).text);
@@ -84,7 +83,6 @@
               }, false);
               li.appendChild(t);
               li.appendChild(a);
-//              element.appendChild(li);
               document.getElementById("ourList").appendChild(li);
             }
           });        
@@ -119,7 +117,7 @@
         }
       }
       
-      //
+      // start the party
       $(function() {
         console.log("-- started the main page and init our DB --");
         initDB();
