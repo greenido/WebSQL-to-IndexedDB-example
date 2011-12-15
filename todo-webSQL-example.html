@@ -35,7 +35,7 @@
     </style>
   </head>
   <body>
-    <h1>ToDo list - WebSQL example</h1>
+    <h1>ToDo list - WebSQL Example</h1>
     <ul id="todoItems"></ul>
     <input type="text" id="todo" name="todo" placeholder="What do you need to do?"/>
     <input type="submit" value="Add Todo Item" onclick="addTodo(); return false;" />
@@ -66,8 +66,9 @@
         document.getElementById("ourList").innerHTML = "" ; 
         database.transaction(function(tx) {
           tx.executeSql('SELECT * FROM tasks', [], function (tx, results) {
-            var len = results.rows.length, i;
-            for (i = 0; i < len; i++) {
+            var len = results.rows.length
+            var ul = document.createElement("ul");
+            for (var i = 0; i < len; i++) {
               var li = document.createElement("li");
               var t = document.createTextNode(i+ ") key: " + results.rows.item(i).id +
                 " => Todo text: " + results.rows.item(i).text);
@@ -81,8 +82,9 @@
               }, false);
               li.appendChild(t);
               li.appendChild(a);
-              document.getElementById("ourList").appendChild(li);
+              ul.appendChild(li);
             }
+            document.getElementById("ourList").appendChild(ul);
           });        
         });
       }

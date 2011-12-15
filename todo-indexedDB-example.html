@@ -5,6 +5,7 @@
     <title>ToDo List with IndexedDB</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script>
+      var dbName = "todo2";
       var todoDB = {};
       var indexedDB = window.indexedDB || window.webkitIndexedDB ||
         window.mozIndexedDB;
@@ -22,7 +23,7 @@
       };
 
       todoDB.indexedDB.open = function() {
-        var request = indexedDB.open("todos");
+        var request = indexedDB.open(dbName);
 
         request.onsuccess = function(e) {
           var v = "2.0 beta"; // yes! you can put strings in the version not just numbers
@@ -141,22 +142,23 @@
 
       function showAll() {
         document.getElementById("ourList").innerHTML = "" ;   
-        var request = window.indexedDB.open("todos");
+        var request = window.indexedDB.open(dbName);
         request.onsuccess = function(event) {
           // Enumerate the entire object store.
           var db = todoDB.indexedDB.db;
           var trans = db.transaction(["todo"], IDBTransaction.READ_ONLY);
           var request = trans.objectStore("todo").openCursor();
-  
+          var ul = document.createElement("ul");
           request.onsuccess = function(event) {
             var cursor = request.result || event.result;
             // If cursor is null then we've completed the enumeration.
             if (!cursor) {
+              document.getElementById("ourList").appendChild(ul);
               return;
             }
-            var element = document.createElement("div");
-            element.textContent = "key: " + cursor.key + " => Todo text: " + cursor.value.text;
-            document.getElementById("ourList").appendChild(element);
+            var li = document.createElement("li");
+            li.textContent = "key: " + cursor.key + " => Todo text: " + cursor.value.text;
+            ul.appendChild(li);
             cursor.continue();
           }
         }                    
