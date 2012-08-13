@@ -31,8 +31,10 @@
           var v = "2.0 beta"; // yes! you can put strings in the version not just numbers
           todoDB.indexedDB.db = e.target.result;
           var db = todoDB.indexedDB.db;
+
           // We can only create Object stores in a setVersion transaction;
           if (v!= db.version) {
+
             var setVrequest = db.setVersion(v);
 
             // onsuccess is the only place we can create Object Stores
@@ -46,11 +48,10 @@
               var store = db.createObjectStore("todo",
               {keyPath: "timeStamp"});
 
-              // since we can't do any other requests
-              // during a versionchange we need to
-              // attempt the getAllTodoItems() call
-              // outside of the onsuccess call stack
-              setTimeout(todoDB.indexedDB.getAllTodoItems, 0);
+              var transaction = e.target.result;
+              transaction.oncomplete = function() {
+                todoDB.indexedDB.getAllTodoItems();
+              }
             };
           }
           else {
