@@ -3,7 +3,6 @@
   <head>
     <meta charset=utf-8 />
     <title>ToDo List with IndexedDB</title>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script>
       var READ_WRITE = 'readwrite';
       var READ_ONLY = 'readonly';
@@ -173,10 +172,9 @@
       }
 
 
-      $(function() {
-        console.log("-- lets start the party");
+      document.addEventListener('DOMContentLoaded',function() {
+        console.log('-- lets start the party');
         init();
-
       });
 
     </script>
@@ -202,9 +200,10 @@
   <body>
     <h1>ToDo list - IndexedDB Example</h1>
     <ul id="todoItems"></ul>
-    <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
-    <input type="submit" value="Add Todo Item" onclick="addTodo(); return false;" />
-
+    <form onsubmit="addTodo(); return false;">
+        <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
+        <input type="submit" value="Add Todo Item" />
+    </form>
     <h3>Todos</h3>
     <input type="submit" value="Show All Todos" onclick="showAll(); return false;" />
     <div id="ourList">
