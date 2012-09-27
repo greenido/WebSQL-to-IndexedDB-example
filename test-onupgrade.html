@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <script>
+
+      var indexedDB = window.indexedDB || window.webkitIndexedDB 
+                    ||window.mozIndexedDB||window.msIndexedDB;
+
+      var request = indexedDB.open("testUpgrade",1);    
+      var customerData=[
+        {tel:"540-343-3334",name:"Monk",age:35,email:"mock@example.com"},      
+        {tel:"650-450-5555",name:"Jack",age:32,email:"jack-2@example.com"}
+      ];
+
+      request.onerror = function(e){
+         alert("Oppss... we got into problems and errors. e:"+e);
+      };
+      
+      request.onupgradeneeded = function(event) {
+         alert("UPGRADE our nice DB") ;
+         var objectStore = db.createObjectStore("customers",{keyPath:"ssn"});
+         objectStore.createIndex("name","name",{unique:false});
+         objectStore.createIndex("email","email",{unique:true});
+
+         for(var i in customerData){
+            objectStore.add(customerData[i]);
+         }
+      };
+      
+      request.onsuccess = function(e) {
+         alert("life is good with indexedDB e:"+e) ;
+      };
+      
+    </script>
+  </head>
+</html>
