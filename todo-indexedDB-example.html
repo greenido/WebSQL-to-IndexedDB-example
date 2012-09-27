@@ -3,10 +3,14 @@
   <head>
     <meta charset=utf-8 />
     <title>ToDo List with IndexedDB</title>
+    <meta name="description" content="WebSQL To IndexedDB Live Example - last updated: May 2012">
+    <meta name="author" content="Ido Green">
+
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script>
-      var READ_WRITE = 'readwrite';
-      var READ_ONLY = 'readonly';
-      var dbName = "todo2";
+      var dbName = "todo3";
+      var dbVersion = 2.0;
       var todoDB = {};
       var indexedDB = window.indexedDB || window.webkitIndexedDB ||
         window.mozIndexedDB;
@@ -24,45 +28,62 @@
       };
 
       todoDB.indexedDB.open = function() {
-        var request = indexedDB.open(dbName);
+        var request = indexedDB.open(dbName, dbVersion);
 
         request.onsuccess = function(e) {
-          var v = "2.0 beta"; // yes! you can put strings in the version not just numbers
+          // Old api: var v = "2-beta"; 
+          console.log ("success to open DB: " + dbName);
           todoDB.indexedDB.db = e.target.result;
           var db = todoDB.indexedDB.db;
+          if (db.setVersion) {
+            console.log("in old setVersion: "+ db.setVersion);
+              if (db.version != dbVersion) {
+                  var req = db.setVersion(dbVersion);
+                  req.onsuccess = function () {
+                    if(db.objectStoreNames.contains("todo")) {
+                      db.deleteObjectStore("todo");
+                    }
 
-          // We can only create Object stores in a setVersion transaction;
-          if (v!= db.version) {
+                    var store = db.createObjectStore("todo", {keyPath: "timeStamp"});
 
-            var setVrequest = db.setVersion(v);
-
-            // onsuccess is the only place we can create Object Stores
-            // but we can't do any other requests here
-            setVrequest.onfailure = todoDB.indexedDB.onerror;
-            setVrequest.onsuccess = function(e) {
-              if(db.objectStoreNames.contains("todo")) {
-                db.deleteObjectStore("todo");
+                    var trans = req.result;
+                    trans.oncomplete = function(e) {
+                      console.log("== trans oncomplete ==");
+                      todoDB.indexedDB.getAllTodoItems();
+                    }
+                  };
               }
-
-              var store = db.createObjectStore("todo",
-              {keyPath: "timeStamp"});
-
-              var transaction = e.target.result;
-              transaction.oncomplete = function() {
-                todoDB.indexedDB.getAllTodoItems();
+              else {
+                  todoDB.indexedDB.getAllTodoItems();
               }
-            };
           }
           else {
-            todoDB.indexedDB.getAllTodoItems();
+              todoDB.indexedDB.getAllTodoItems();
           }
-        };
+
+        }
+        
+        request.onupgradeneeded = function(e) {
+          console.log ("going to upgrade our DB!");
+          
+          todoDB.indexedDB.db = e.target.result;
+          var db = todoDB.indexedDB.db;
+          if(db.objectStoreNames.contains("todo")) {
+            db.deleteObjectStore("todo");
+          }
+
+          var store = db.createObjectStore("todo",
+          {keyPath: "timeStamp"});
+
+          todoDB.indexedDB.getAllTodoItems();
+        }
+       
         request.onfailure = todoDB.indexedDB.onerror;
-      }
+      };
 
       todoDB.indexedDB.addTodo = function(todoText) {
         var db = todoDB.indexedDB.db;
-        var trans = db.transaction(['todo'], READ_WRITE);
+        var trans = db.transaction(['todo'], "readwrite");
         var store = trans.objectStore("todo");
 
         var data = {
@@ -83,7 +104,7 @@
 
       todoDB.indexedDB.deleteTodo = function(id) {
         var db = todoDB.indexedDB.db;
-        var trans = db.transaction(["todo"], READ_WRITE);
+        var trans = db.transaction(["todo"], "readwrite");
         var store = trans.objectStore("todo");
 
         var request = store.delete(id);
@@ -93,7 +114,7 @@
         };
 
         request.onerror = function(e) {
-          console.log("Error Delete: ", e);
+          console.log("Error Adding: ", e);
         };
       };
 
@@ -102,7 +123,7 @@
         todos.innerHTML = "";
 
         var db = todoDB.indexedDB.db;
-        var trans = db.transaction(["todo"], READ_WRITE);
+        var trans = db.transaction(["todo"], "readwrite");
         var store = trans.objectStore("todo");
 
         // Get everything in the store;
@@ -148,12 +169,12 @@
       }
 
       function showAll() {
-        document.getElementById("ourList").innerHTML = "" ;
+        document.getElementById("ourList").innerHTML = "" ;   
         var request = window.indexedDB.open(dbName);
         request.onsuccess = function(event) {
           // Enumerate the entire object store.
           var db = todoDB.indexedDB.db;
-          var trans = db.transaction(["todo"], READ_ONLY);
+          var trans = db.transaction(["todo"], IDBTransaction.READ_ONLY);
           var request = trans.objectStore("todo").openCursor();
           var ul = document.createElement("ul");
           request.onsuccess = function(event) {
@@ -168,13 +189,14 @@
             ul.appendChild(li);
             cursor.continue();
           }
-        }
+        }                    
       }
 
 
-      document.addEventListener('DOMContentLoaded',function() {
-        console.log('-- lets start the party');
+      $(function() {
+        console.log("-- lets start the party");
         init();
+
       });
 
     </script>
@@ -200,10 +222,9 @@
   <body>
     <h1>ToDo list - IndexedDB Example</h1>
     <ul id="todoItems"></ul>
-    <form onsubmit="addTodo(); return false;">
-        <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
-        <input type="submit" value="Add Todo Item" />
-    </form>
+    <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
+    <input type="submit" value="Add Todo Item" onclick="addTodo(); return false;" />
+
     <h3>Todos</h3>
     <input type="submit" value="Show All Todos" onclick="showAll(); return false;" />
     <div id="ourList">
