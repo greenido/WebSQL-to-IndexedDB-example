@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-<<<<<<< HEAD
   <head>
     <meta charset=utf-8 />
     <title>ToDo List with IndexedDB</title>
@@ -8,18 +7,6 @@
       var READ_WRITE = 'readwrite';
       var READ_ONLY = 'readonly';
       var dbName = "todo2";
-=======
-<head>
-  <meta charset=utf-8 />
-  <title>ToDo List with IndexedDB</title>
-  <meta name="description" content="WebSQL To IndexedDB Live Example - last updated: May 2012">
-  <meta name="author" content="Ido Green">
-
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-  <script>
-      var dbName = "todo3";
-      var dbVersion = 2.0;
->>>>>>> fix the version upgrade to work both on Chrome and FF
       var todoDB = {};
       var indexedDB = window.indexedDB || window.webkitIndexedDB ||
         window.mozIndexedDB;
@@ -37,14 +24,12 @@
       };
 
       todoDB.indexedDB.open = function() {
-        var request = indexedDB.open(dbName, dbVersion);
+        var request = indexedDB.open(dbName);
 
         request.onsuccess = function(e) {
-          // Old api: var v = "2-beta"; 
-          console.log ("success to open DB: " + dbName);
+          var v = "2.0 beta"; // yes! you can put strings in the version not just numbers
           todoDB.indexedDB.db = e.target.result;
           var db = todoDB.indexedDB.db;
-<<<<<<< HEAD
 
           // We can only create Object stores in a setVersion transaction;
           if (v!= db.version) {
@@ -67,61 +52,17 @@
                 todoDB.indexedDB.getAllTodoItems();
               }
             };
-=======
-          if (db.setVersion) {
-            console.log("in old setVersion: "+ db.setVersion);
-              if (db.version != dbVersion) {
-                  var req = db.setVersion(dbVersion);
-                  req.onsuccess = function () {
-                    if(db.objectStoreNames.contains("todo")) {
-                      db.deleteObjectStore("todo");
-                    }
-
-                    var store = db.createObjectStore("todo", {keyPath: "timeStamp"});
-
-                    var trans = req.result;
-                    trans.oncomplete = function(e) {
-                      console.log("== trans oncomplete ==");
-                      todoDB.indexedDB.getAllTodoItems();
-                    }
-                  };
-              }
-              else {
-                  todoDB.indexedDB.getAllTodoItems();
-              }
->>>>>>> fix the version upgrade to work both on Chrome and FF
           }
           else {
-              todoDB.indexedDB.getAllTodoItems();
+            todoDB.indexedDB.getAllTodoItems();
           }
-
-        }
-        
-        request.onupgradeneeded = function(e) {
-          console.log ("going to upgrade our DB!");
-          
-          todoDB.indexedDB.db = e.target.result;
-          var db = todoDB.indexedDB.db;
-          if(db.objectStoreNames.contains("todo")) {
-            db.deleteObjectStore("todo");
-          }
-
-          var store = db.createObjectStore("todo",
-          {keyPath: "timeStamp"});
-
-          todoDB.indexedDB.getAllTodoItems();
-        }
-       
+        };
         request.onfailure = todoDB.indexedDB.onerror;
-      };
+      }
 
       todoDB.indexedDB.addTodo = function(todoText) {
         var db = todoDB.indexedDB.db;
-<<<<<<< HEAD
         var trans = db.transaction(['todo'], READ_WRITE);
-=======
-        var trans = db.transaction(['todo'], "readwrite");
->>>>>>> fix the version upgrade to work both on Chrome and FF
         var store = trans.objectStore("todo");
 
         var data = {
@@ -142,11 +83,7 @@
 
       todoDB.indexedDB.deleteTodo = function(id) {
         var db = todoDB.indexedDB.db;
-<<<<<<< HEAD
         var trans = db.transaction(["todo"], READ_WRITE);
-=======
-        var trans = db.transaction(["todo"], "readwrite");
->>>>>>> fix the version upgrade to work both on Chrome and FF
         var store = trans.objectStore("todo");
 
         var request = store.delete(id);
@@ -165,11 +102,7 @@
         todos.innerHTML = "";
 
         var db = todoDB.indexedDB.db;
-<<<<<<< HEAD
         var trans = db.transaction(["todo"], READ_WRITE);
-=======
-        var trans = db.transaction(["todo"], "readwrite");
->>>>>>> fix the version upgrade to work both on Chrome and FF
         var store = trans.objectStore("todo");
 
         // Get everything in the store;
@@ -245,7 +178,7 @@
       });
 
     </script>
-  <style>
+    <style>
       #ourList {
         background: lightcyan;
         padding: 25px;
@@ -263,7 +196,6 @@
         width: 250px;
       }
     </style>
-<<<<<<< HEAD
   </head>
   <body>
     <h1>ToDo list - IndexedDB Example</h1>
@@ -279,17 +211,3 @@
     </div>
   </body>
 </html>
-=======
-</head>
-<body>
-  <h1>ToDo list - IndexedDB Example</h1>
-  <ul id="todoItems"></ul>
-  <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
-  <input type="submit" value="Add Todo Item" onclick="addTodo(); return false;" />
-
-  <h3>Todos</h3>
-  <input type="submit" value="Show All Todos" onclick="showAll(); return false;" />
-  <div id="ourList"></div>
-</body>
-</html>
->>>>>>> fix the version upgrade to work both on Chrome and FF
