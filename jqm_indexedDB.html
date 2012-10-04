@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Short example on using indexedDB with jquery mobile - last updated: May 2012">
+  <meta name="author" content="Ido Green">
+
+  <title>IndexedDB with JQM</title>
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
+  <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
+
+  <script>
+      var dbName = "jqm-todo";
+      var dbVersion = 1.0;
+      var todoDB = {};
+      var indexedDB = window.indexedDB || window.webkitIndexedDB ||
+        window.mozIndexedDB;
+
+      if ('webkitIndexedDB' in window) {
+        window.IDBTransaction = window.webkitIDBTransaction;
+        window.IDBKeyRange = window.webkitIDBKeyRange;
+      }
+
+      todoDB.indexedDB = {};
+      todoDB.indexedDB.db = null;
+     
+
+      $(document).bind('pageinit', function() {
+        console.log("-- lets start the party --");
+        todoDB.indexedDB.open();
+        $("#addItem").click(function() {
+          addTodo();
+        });
+      });
+
+      todoDB.indexedDB.onerror = function(e) {
+        console.log(e);
+      };
+
+      todoDB.indexedDB.open = function() {
+        var request = indexedDB.open(dbName, dbVersion);
+
+        request.onsuccess = function(e) {
+          console.log ("success our DB: " + dbName + " is open and ready for work");
+          todoDB.indexedDB.db = e.target.result;
+          var db = todoDB.indexedDB.db;
+          if (db.setVersion) {
+            console.log("in old setVersion: "+ db.setVersion);
+              if (db.version != dbVersion) {
+                  var req = db.setVersion(dbVersion);
+                  req.onsuccess = function () {
+                    if(db.objectStoreNames.contains("todo")) {
+                      db.deleteObjectStore("todo");
+                    }
+
+                    var store = db.createObjectStore("todo", {keyPath: "timeStamp"});
+                    var trans = req.result;
+                    trans.oncomplete = function(e) {
+                      console.log("== oncomplete transaction ==");
+                      todoDB.indexedDB.getAllTodoItems();
+                    }
+                  };
+              }
+              else {
+                  todoDB.indexedDB.getAllTodoItems();
+              }
+          }
+          else {
+              todoDB.indexedDB.getAllTodoItems();
+          }
+        }
+        
+        request.onupgradeneeded = function(e) {
+          console.log ("Going to upgrade our DB");
+          
+          todoDB.indexedDB.db = e.target.result;
+          var db = todoDB.indexedDB.db;
+          if(db.objectStoreNames.contains("todo")) {
+            db.deleteObjectStore("todo");
+          }
+
+          var store = db.createObjectStore("todo",
+          {keyPath: "timeStamp"});
+
+          todoDB.indexedDB.getAllTodoItems();
+        }
+       
+        request.onfailure = todoDB.indexedDB.onerror;
+        request.onerror = function(e) {
+          console.error("Well... How should I put it? We have some issues with our DB! Err:"+e);
+        }
+      };
+
+      todoDB.indexedDB.addTodo = function(todoText) {
+        var db = todoDB.indexedDB.db;
+        var trans = db.transaction(['todo'], "readwrite");
+        var store = trans.objectStore("todo");
+
+        var data = {
+          "text": todoText,
+          "timeStamp": new Date().getTime()
+        };
+
+        var request = store.put(data);
+
+        request.onsuccess = function(e) {
+          todoDB.indexedDB.getAllTodoItems();
+        };
+
+        request.onerror = function(e) {
+          console.error("Error Adding an item: ", e);
+        };
+      };
+
+      todoDB.indexedDB.deleteTodo = function(id) {
+        var db = todoDB.indexedDB.db;
+        var trans = db.transaction(["todo"], "readwrite");
+        var store = trans.objectStore("todo");
+
+        var request = store.delete(id);
+
+        request.onsuccess = function(e) {
+          todoDB.indexedDB.getAllTodoItems();
+        };
+
+        request.onerror = function(e) {
+          console.error("Error deleteing: ", e);
+        };
+      };
+
+      todoDB.indexedDB.getAllTodoItems = function() {
+        var todos = document.getElementById("todoItems");
+        todos.innerHTML = "";
+
+        var db = todoDB.indexedDB.db;
+        var trans = db.transaction(["todo"], "readwrite");
+        var store = trans.objectStore("todo");
+
+        // Get everything in the store;
+        var keyRange = IDBKeyRange.lowerBound(0);
+        var cursorRequest = store.openCursor(keyRange);
+
+        cursorRequest.onsuccess = function(e) {
+          var result = e.target.result;
+          if(!!result == false)
+            return;
+
+          renderTodo(result.value);
+          result.continue();
+        };
+
+        cursorRequest.onerror = todoDB.indexedDB.onerror;
+      };
+
+      function renderTodo(row) {
+        var todos = document.getElementById("todoItems");
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        var t = document.createTextNode(row.text);
+
+        a.addEventListener("click", function() {
+          todoDB.indexedDB.deleteTodo(row.timeStamp);
+        }, false);
+        // some fun with jquery mobile data attributes
+        a.setAttribute("href", "#");
+        a.setAttribute("data-iconpos", "notext");
+        a.setAttribute("data-role", "button");
+        a.setAttribute("data-icon", "delete"); 
+        a.setAttribute("data-inline", "true");
+        
+        li.appendChild(a);
+        li.appendChild(t);
+        todos.appendChild(li)
+        // And lets create the new il item with its markup
+        $("#todoItems").trigger('create'); 
+      }
+
+      // Add an item only if we have more then zero letters
+      function addTodo() {
+        var todo = document.getElementById("todo");
+        if (todo.value.length > 0) {
+          todoDB.indexedDB.addTodo(todo.value);
+          todo.value = "";
+        }  
+      }
+
+    
+      // use it in case you wish to work on specific 'set' of data
+      function showAll() {
+        document.getElementById("ourList").innerHTML = "" ;   
+        var request = window.indexedDB.open(dbName);
+        request.onsuccess = function(event) {
+          // Enumerate the entire object store.
+          var db = todoDB.indexedDB.db;
+          var trans = db.transaction(["todo"], IDBTransaction.READ_ONLY);
+          var request = trans.objectStore("todo").openCursor();
+          var ul = document.createElement("ul");
+          request.onsuccess = function(event) {
+            var cursor = request.result || event.result;
+            // If cursor is null then we've completed the enumeration.
+            if (!cursor) {
+              document.getElementById("ourList").appendChild(ul);
+              return;
+            }
+            var li = document.createElement("li");
+            li.textContent = "key: " + cursor.key + " => Todo text: " + cursor.value.text;
+            ul.appendChild(li);
+            cursor.continue();
+          }
+        }                    
+      }
+      </script>
+
+</head>
+<body>
+  <div data-role="page">
+
+    <div data-role="header">
+      <h1>IndexedDB with JQM</h1>
+    </div>
+    <!-- /header -->
+
+    <div data-role="content">
+      <p>
+        This is a short example of inexedDB with jQueryMobile on a todo list app. Please open Chrome DevTools and/or FireBug in order to see all the log message and understand what is the process.
+      </p>
+      <p>
+        <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
+        <input type="submit" value="Add Todo Item" id="addItem" />
+      </p>
+
+      <ul id="todoItems" data-role="listview" data-inset="true" data-filter="true"></ul>
+
+    </div>
+    <!-- /content -->
+
+    <div data-role="footer">
+      <p>
+        <ul>
+          <li>
+            <a href="http://greenido.wordpress.com">Ido's blog</a>
+          </li>
+          <li>
+            <a href="http://www.w3.org/TR/IndexedDB/">IndexedDB spec on w3c</a>
+          </li>
+          <li>
+            <a href="https://github.com/greenido/WebSQL-to-IndexedDB-example">WebSQL to IndexedDB example on github</a>
+          </li>
+        </ul>
+      </p>
+
+    </div> <!-- /footer --> 
+  </div>   <!-- /page -->
+
+</body>
+</html>
