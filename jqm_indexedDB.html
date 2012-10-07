@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
   <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
+
+  <!-- This shim will let your indexedDB code run in Safari and Opera as well! The nice & sweet thing is that you are now ready (with the same code) to built a mobile web app that will work both on iOS, Android and other OS that got Opera 
+  -->
   <script src="http://axemclion.github.com/IndexedDBShim/dist/IndexedDBShim.min.js"></script>
 
   <script>
@@ -216,7 +219,7 @@
 
 </head>
 <body>
-  <div data-role="page">
+  <div data-role="page" data-content-theme="e">
 
     <div data-role="header">
       <h1>IndexedDB with JQM</h1>
@@ -226,6 +229,8 @@
     <div data-role="content">
       <p>
         This is a short example of inexedDB with jQueryMobile on a todo list app. Please open Chrome DevTools and/or FireBug in order to see all the log message and understand what is the process.
+        <br/>
+        Pssst... This shim <b>&lt;script src="http://axemclion.github.com/IndexedDBShim/dist/IndexedDBShim.min.js"&gt;&lt;/script&gt;</b> will let your indexedDB code run in Safari and Opera as well! The sweet thing is that you are now ready (with the same code) to built a mobile web app that will work both on iOS and Android.
       </p>
       <p>
         <input type="text" id="todo" name="todo" placeholder="What do you need to do?" />
@@ -238,19 +243,11 @@
     <!-- /content -->
 
     <div data-role="footer">
-      <p>
-        <ul>
-          <li>
-            <a href="http://greenido.wordpress.com">Ido's blog</a>
-          </li>
-          <li>
-            <a href="http://www.w3.org/TR/IndexedDB/">IndexedDB spec on w3c</a>
-          </li>
-          <li>
-            <a href="https://github.com/greenido/WebSQL-to-IndexedDB-example">WebSQL to IndexedDB example on github</a>
-          </li>
-        </ul>
-      </p>
+      <div data-role="controlgroup" data-type="horizontal">
+        <a href="http://greenido.wordpress.com" data-role="button" data-icon="check">Ido's blog</a>
+        <a href="http://www.w3.org/TR/IndexedDB/" data-role="button" data-icon="gear">IndexedDB spec on w3c</a>
+        <a href="https://github.com/greenido/WebSQL-to-IndexedDB-example" data-icon="plus" data-role="button">WebSQL to IndexedDB example on github</a>
+      </div>
 
     </div> <!-- /footer --> 
   </div>   <!-- /page -->
