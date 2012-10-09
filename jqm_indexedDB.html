@@ -17,7 +17,7 @@
 
   <script>
       var dbName = "jqm-todo";
-      var dbVersion = 1.0;
+      var dbVersion = 1;
       var todoDB = {};
       var indexedDB = window.indexedDB || window.webkitIndexedDB ||
         window.mozIndexedDB;
@@ -77,21 +77,25 @@
         }
         
         request.onupgradeneeded = function(e) {
-          console.log ("Going to upgrade our DB");
-          
           todoDB.indexedDB.db = e.target.result;
           var db = todoDB.indexedDB.db;
-          if(db.objectStoreNames.contains("todo")) {
-            db.deleteObjectStore("todo");
+          console.log ("Going to upgrade our DB from version: "+ db.version + " to " + dbVersion);
+          if (db.version != dbVersion) {
+            if(db.objectStoreNames.contains("todo")) {
+              db.deleteObjectStore("todo");
+            }
+
+            var store = db.createObjectStore("todo",
+                {keyPath: "timeStamp"});
+            console.log("-- onupgradeneeded store:"+ JSON.stringify(store));
           }
-
-          var store = db.createObjectStore("todo",
-          {keyPath: "timeStamp"});
-
-          todoDB.indexedDB.getAllTodoItems();
         }
        
-        request.onfailure = todoDB.indexedDB.onerror;
+        request.onfailure = function(e) {
+          console.error("could not open our DB! Err:"+e);  
+        }
+
+        
         request.onerror = function(e) {
           console.error("Well... How should I put it? We have some issues with our DB! Err:"+e);
         }

@@ -17,8 +17,8 @@
       function addTodo() {
         var todo = document.getElementById("todo");
         var task = {
-          "id": new Date().getTime(),
-          "text": todo.value };
+            "id": new Date().getTime(),
+            "text": todo.value };
         
         database.transaction(function(tx) {
           tx.executeSql('INSERT INTO tasks (id, text) values (?, ?)', [task.id, task.text]);
@@ -130,13 +130,13 @@
     <div data-role="footer">
       <p>
         <div data-role="controlgroup" data-type="horizontal">
-          
-            <a href="http://greenido.wordpress.com" data-role="button">Ido's blog</a>
-         
-            <a href="http://www.w3.org/TR/webdatabase/" data-role="button">WebSQL Deprecated spec on w3c</a>
-          
-            <a href="https://github.com/greenido/WebSQL-to-WebSQL-example" data-role="button">WebSQL to IndexedDB example on github</a>
-          </div>
+
+          <a href="http://greenido.wordpress.com" data-role="button">Ido's blog</a>
+
+          <a href="http://www.w3.org/TR/webdatabase/" data-role="button">WebSQL Deprecated spec on w3c</a>
+
+          <a href="https://github.com/greenido/WebSQL-to-WebSQL-example" data-role="button">WebSQL to IndexedDB example on github</a>
+        </div>
       </p>
 
     </div>
