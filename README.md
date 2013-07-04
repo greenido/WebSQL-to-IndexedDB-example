@@ -8,9 +8,11 @@ use JQM with indexedDB and WebSQL in order to create a simple web app for todo l
 Classic, no?
 
 # Examples
+* The JqueryMobile todo list example is on my project site: http://ido-green.appspot.com/WebSQL-IndexedDB-example/jqm_indexedDB.html 
 * I've wrote this post http://greenido.wordpress.com/2012/10/05/how-to-use-indexeddb-simplest-example/ 
-that examplain the code. I hope to have a more detailed one soon on JQM and both DBs.
-* If you have a web app that use WebSQL and you wish to migrate it to leverage indexedDB - This might help you: http://greenido.wordpress.com/2011/11/29/convert-your-websql-to-indexeddb/
+that explain the code. I hope to have a more detailed one soon on JQM and both DBs.
+* If you have a web app that use WebSQL and you wish to migrate it to leverage indexedDB - This might (also) help you: http://greenido.wordpress.com/2011/11/29/convert-your-websql-to-indexeddb/
+
 
 (!) Please note that since November 18, 2010, the W3C announced that Web SQL database
 is a deprecated specification. This is a recommendation for web developers to no longer
@@ -21,4 +23,4 @@ however, if you are going to start a new project and/or you wish to have your
 code running with the new version of client side database (that will receive updates
 and improvements) you should implement indexedDB as your client side DB.
 
-## Be strong.
+## Be strong
