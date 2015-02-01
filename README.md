@@ -23,4 +23,8 @@ however, if you are going to start a new project and/or you wish to have your
 code running with the new version of client side database (that will receive updates
 and improvements) you should implement indexedDB as your client side DB.
 
+## Todos
+  * Check how it's working in Chrome 42.
+  * Check the options to leverage a lib. for multi browsers support.
+  
 ## Be strong
