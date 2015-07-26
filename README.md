@@ -28,3 +28,7 @@ and improvements) you should implement indexedDB as your client side DB.
   * Check the options to leverage a lib. for multi browsers support.
   
 ## Be strong
+
+
+[![Analytics](https://ga-beacon.appspot.com/UA-65622529-1/WebSQL-to-IndexedDB-example/main)](https://github.com/igrigorik/ga-beacon)
+
